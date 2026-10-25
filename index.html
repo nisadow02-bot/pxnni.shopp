@@ -1152,7 +1152,7 @@
             });
         }
 
-        function fetchDataFromSheet(showNotify = false) {
+                function fetchDataFromSheet(showNotify = false) {
             if (showNotify) Swal.fire({ title: 'กำลังดึงข้อมูลจาก Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
             const url = `${APPS_SCRIPT_URL}?action=fetch`;
@@ -1164,12 +1164,16 @@
                         if (data.products) products = data.products;
                         if (data.sales) orders = data.sales;
                         if (data.topups) pendingTopups = data.topups;
-                        if (data.settings) shopSettings = data.settings;
+                        
+                        // ส่วนสำคัญ: ดึงค่าตั้งค่าจาก Sheet มาทับค่าเริ่มต้น
+                        if (data.settings) {
+                            shopSettings = { ...shopSettings, ...data.settings };
+                        }
 
                         renderProducts();
                         renderOrders();
                         renderAdminView();
-                        updateShopSettingsUI();
+                        updateShopSettingsUI(); // อัปเดตหน้าจอให้แสดงค่าล่าสุดทันที
 
                         if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลสำเร็จ!', timer: 1200, showConfirmButton: false });
                     }
@@ -1179,6 +1183,7 @@
                     if (showNotify) Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลได้', 'error');
                 });
         }
+
     </script>
 </body>
 </html>
