@@ -1037,57 +1037,103 @@
             else { rulesBannerContainer.classList.add('hidden'); }
         }
 
-        function saveAllDataToSheet() {
+                function saveAllDataToSheet() {
             playCuteSound();
             updateShopSettingsUI();
             Swal.fire({ title: 'กำลังบันทึกข้อมูลลง Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
             const payload = { products: products, orders: orders, pendingTopups: pendingTopups, settings: shopSettings };
-            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+            const url = `${APPS_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
 
-            window[callbackName] = function(response) {
-                delete window[callbackName];
-                if (document.body.contains(script)) document.body.removeChild(script);
-                if (response && response.status === 'success') {
+            fetch(url, { method: 'GET', mode: 'no-cors' })
+                .then(() => {
                     Swal.fire('สำเร็จ!', 'บันทึกข้อมูลลง Google Sheet เรียบร้อยแล้ว', 'success');
-                } else {
-                    Swal.fire('สำเร็จ (จำลอง)', 'บันทึกข้อมูลเรียบร้อย (กรุณาใส่ Web App URL จริง)', 'success');
-                }
-            };
-
-            const script = document.createElement('script');
-            script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
-            document.body.appendChild(script);
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                });
         }
 
         function fetchDataFromSheet(showNotify = false) {
             if (showNotify) Swal.fire({ title: 'กำลังดึงข้อมูลจาก Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
-            window[callbackName] = function(response) {
-                delete window[callbackName];
-                if (document.body.contains(script)) document.body.removeChild(script);
+            const url = `${APPS_SCRIPT_URL}?action=fetch`;
 
-                if (response && response.status === 'success') {
-                    if (response.products) products = response.products;
-                    if (response.orders) orders = response.orders;
-                    if (response.pendingTopups) pendingTopups = response.pendingTopups;
-                    if (response.settings) shopSettings = response.settings;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.status === 'success') {
+                        if (data.products) products = data.products;
+                        if (data.orders) orders = data.orders;
+                        if (data.pendingTopups) pendingTopups = data.pendingTopups;
+                        if (data.settings) shopSettings = data.settings;
 
-                    renderProducts();
-                    renderOrders();
-                    renderAdminView();
-                    updateShopSettingsUI();
+                        renderProducts();
+                        renderOrders();
+                        renderAdminView();
+                        updateShopSettingsUI();
 
-                    if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลสำเร็จ!', timer: 1200, showConfirmButton: false });
-                } else {
-                    if (showNotify) Swal.fire({ icon: 'info', title: 'ดึงข้อมูลสำเร็จ', text: 'เชื่อมต่อเรียบร้อย', timer: 1200, showConfirmButton: false });
-                }
+                        if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลสำเร็จ!', timer: 1200, showConfirmButton: false });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    if (showNotify) Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลได้', 'error');
+                });
+        }
             };
 
-            const script = document.createElement('script');
-            script.src = `${APPS_SCRIPT_URL}?action=fetch&callback=${callbackName}`;
-            document.body.appendChild(script);
+
+        function fetchDataFromSheet(showNotify = false) {
+            if (showNotify) Swal.fire({ title: 'กำลังดึงข้อมูลจาก Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+                    function saveAllDataToSheet() {
+            playCuteSound();
+            updateShopSettingsUI();
+            Swal.fire({ title: 'กำลังบันทึกข้อมูลลง Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            
+            const payload = { products: products, orders: orders, pendingTopups: pendingTopups, settings: shopSettings };
+            const url = `${APPS_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
+
+            fetch(url, { method: 'GET', mode: 'no-cors' })
+                .then(() => {
+                    Swal.fire('สำเร็จ!', 'บันทึกข้อมูลลง Google Sheet เรียบร้อยแล้ว', 'success');
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                });
+        }
+
+        function fetchDataFromSheet(showNotify = false) {
+            if (showNotify) Swal.fire({ title: 'กำลังดึงข้อมูลจาก Google Sheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            const url = `${APPS_SCRIPT_URL}?action=fetch`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.status === 'success') {
+                        if (data.products) products = data.products;
+                        if (data.orders) orders = data.orders;
+                        if (data.pendingTopups) pendingTopups = data.pendingTopups;
+                        if (data.settings) shopSettings = data.settings;
+
+                        renderProducts();
+                        renderOrders();
+                        renderAdminView();
+                        updateShopSettingsUI();
+
+                        if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลสำเร็จ!', timer: 1200, showConfirmButton: false });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    if (showNotify) Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลได้', 'error');
+                });
+        }
+
         }
     </script>
 </body>
