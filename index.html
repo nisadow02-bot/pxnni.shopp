@@ -161,7 +161,7 @@
             </button>
         </div>
 
-        <!-- 1. Shop Page -->
+                <!-- 1. Shop Page -->
         <section id="page-shop" class="tab-content">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-bold text-gray-800 flex items-center"><span class="w-3 h-3 bg-pink-400 rounded-full mr-2"></span> สินค้าทั้งหมด</h2>
@@ -205,6 +205,89 @@
                         <i class="fa-solid fa-paper-plane mr-1"></i> แจ้งเติมเครดิต
                     </button>
                 </form>
+            </div>
+        </section>
+
+        <!-- 3. Orders History Page -->
+        <section id="page-orders" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-pastelPink/40">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center"><i class="fa-solid fa-box-open text-purple-500 mr-2"></i> คำสั่งซื้อของฉัน (สถานะการส่งสินค้า)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-pastelPurple/40 text-purple-900 text-xs uppercase font-semibold rounded-xl">
+                            <tr>
+                                <th class="p-3 rounded-l-xl">รหัสออเดอร์</th>
+                                <th class="p-3">สินค้า</th>
+                                <th class="p-3">ราคา</th>
+                                <th class="p-3">รหัส / บัญชีที่ได้รับ</th>
+                                <th class="p-3">สถานะ</th>
+                                <th class="p-3 rounded-r-xl">วันที่ซื้อ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Account / Payment Page -->
+        <section id="page-account" class="tab-content hidden">
+            <div class="max-w-xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-pastelPink/40 space-y-6">
+                <div class="flex items-center space-x-3 mb-2 border-b border-gray-100 pb-3">
+                    <i class="fa-solid fa-credit-card text-2xl text-pink-400"></i>
+                    <h2 class="text-xl font-bold text-gray-800">ช่องทางการชำระเงิน / บัญชีร้าน</h2>
+                </div>
+                
+                <div id="qrImgContainer" class="text-center hidden">
+                    <img id="qrImgDisplay" src="" class="max-w-xs h-auto rounded-2xl mx-auto shadow-sm border border-pastelPink/50">
+                    <p class="text-xs text-gray-400 mt-2">QR Code พร้อมเพย์ / บัญชีร้าน</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-pink-50/60 p-4 rounded-2xl border border-pink-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-pink-500 font-semibold mb-0.5">ธนาคาร / ชื่อบัญชี</p>
+                            <p class="text-sm font-bold text-gray-800" id="displayBankName">-</p>
+                            <p class="text-xs font-mono text-gray-600" id="displayAccName">-</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-pink-50/60 p-4 rounded-2xl border border-pink-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-pink-500 font-semibold mb-0.5">เลขบัญชีธนาคาร</p>
+                            <p class="text-base font-mono font-bold text-pink-900" id="displayAccNumber">-</p>
+                        </div>
+                        <button onclick="copyText('displayAccNumber', 'เลขบัญชี')" class="bg-pink-400 hover:bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                            <i class="fa-solid fa-copy mr-1"></i> คัดลอก
+                        </button>
+                    </div>
+
+                    <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-amber-600 font-semibold mb-0.5">TrueMoney Wallet</p>
+                            <p class="text-base font-mono font-bold text-amber-900" id="displayTrueWallet">-</p>
+                        </div>
+                        <button onclick="copyText('displayTrueWallet', 'TrueMoney Wallet')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                            <i class="fa-solid fa-copy mr-1"></i> คัดลอก
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Shop Rules Page -->
+        <section id="page-rules" class="tab-content hidden">
+            <div class="max-w-xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-pastelPink/40">
+                <div class="flex items-center space-x-3 mb-4 border-b border-gray-100 pb-3">
+                    <i class="fa-solid fa-book-open text-2xl text-yellow-500"></i>
+                    <h2 class="text-xl font-bold text-gray-800">กฎและข้อตกลงของร้าน</h2>
+                </div>
+                <div id="rulesBannerContainer" class="mb-4 text-center hidden">
+                    <img id="rulesBannerDisplay" src="" class="max-w-full h-auto rounded-2xl mx-auto shadow-sm border border-pastelPink/30">
+                </div>
+                <div class="space-y-3 text-sm text-gray-600 leading-relaxed whitespace-pre-line" id="shopRulesContent">
+                    - กำลังโหลดกฎระเบียบ...
+                </div>
             </div>
         </section>
 
