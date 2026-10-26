@@ -19,14 +19,14 @@
                 extend: {
                     colors: {
                         pastelPink: '#FFD1DC',
-                        pastelPinkDark: '#FFB7C5',
-                        pastelPinkCute: '#FF9EAA',
-                        pastelPurple: '#E8DFF5',
-                        pastelPurpleDark: '#D4C3ED',
-                        pastelYellow: '#FCF4DD',
-                        pastelYellowDark: '#F7E7B4',
-                        pastelGreen: '#DDEDEA',
-                        pastelCream: '#FFF9F5',
+                        pastelPinkDark: '#FFB7C5',
+                        pastelPinkCute: '#FF9EAA',
+                        pastelPurple: '#E8DFF5',
+                        pastelPurpleDark: '#D4C3ED',
+                        pastelYellow: '#FCF4DD',
+                        pastelYellowDark: '#F7E7B4',
+                        pastelGreen: '#DDEDEA',
+                        pastelCream: '#FFF9F5',
                     },
                     fontFamily: {
                         sans: ['Kanit', 'sans-serif'],
@@ -265,6 +265,17 @@
                             <i class="fa-solid fa-copy mr-1"></i> คัดลอก
                         </button>
                     </div>
+
+                    <!-- เพิ่มส่วนแสดงโน้ตสลิป พร้อมปุ่มคัดลอก -->
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-amber-600 font-semibold mb-0.5"><i class="fa-solid fa-note-sticky mr-1"></i> โน้ตสลิป / คำแนะนำการโอน</p>
+                            <p class="text-sm font-medium text-amber-900 whitespace-pre-line" id="displayAccSlipNote">-</p>
+                        </div>
+                        <button onclick="copyText('displayAccSlipNote', 'โน้ตสลิป')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all whitespace-nowrap ml-3">
+                            <i class="fa-solid fa-copy mr-1"></i> คัดลอกโน้ต
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -297,7 +308,7 @@
                 </div>
 
                 <div class="space-y-8">
-                    <!-- Sales Report Panel (ตามที่ขอให้นำมาแสดงในหน้าตั้งค่าแอดมิน) -->
+                    <!-- Sales Report Panel -->
                     <div class="bg-gradient-to-r from-pink-50 to-purple-50 p-5 rounded-2xl border border-pink-100 shadow-sm">
                         <h3 class="font-bold text-sm text-pink-900 mb-3 flex items-center">
                             <i class="fa-solid fa-chart-line text-pink-500 mr-2"></i> สรุปยอดขาย (Sales Summary)
@@ -384,7 +395,7 @@
                         </div>
                     </div>
 
-                    <!-- Account Setting -->
+                    <!-- Account Setting (รวมถึงช่องกรอกโน้ตสลิป) -->
                     <div class="bg-pink-50/40 p-5 rounded-2xl border border-pink-100 space-y-3">
                         <h3 class="font-bold text-sm text-pink-800"><i class="fa-solid fa-wallet mr-1"></i> ตั้งค่าข้อมูลบัญชี / ช่องทางชำระเงิน</h3>
                         <div>
@@ -407,6 +418,10 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1">TrueMoney Wallet</label>
                                 <input type="text" id="setAccWallet" placeholder="0xx-xxx-xxxx" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">โน้ตสลิป / หมายเหตุการโอน</label>
+                                <textarea id="setAccSlipNote" rows="2" placeholder="เช่น โอนแล้วส่งสลิปทุกครั้ง / ห้ามโอนเศษสตางค์" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
                             </div>
                         </div>
                     </div>
@@ -474,7 +489,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwc-8QmHzWentJHigrBTuqLWDegrfGy1ScwFNP3eMe4-qa9ZFcA0cQQWVfSjg8xvru/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqnKL4kCULzUYBFoQE0N8-JMYDDybLrG7R_M6pPaAofwXz57t30C9GvkCfg50dA5D4/exec";
         const ADMIN_PASSWORD = "admin";
 
         let currentUser = null;
@@ -490,7 +505,8 @@
             accName: "ชรินพัชร เพชรสวน",
             accNumber: "123-4-56789-0",
             accBank: "ธนาคารกสิกรไทย (KBANK)",
-            accWallet: "081-234-5678"
+            accWallet: "081-234-5678",
+            accSlipNote: "โอนเงินแล้วแนบสลิปทุกครั้ง / ห้ามโอนเศษสตางค์"
         };
 
         function toggleMusic() {
@@ -845,7 +861,6 @@
         function renderAdminView() {
             updateProductSelectDropdown();
 
-            // คำนวณสรุปยอดขาย Sales ในหน้าแอดมิน
             let totalSalesAmount = 0;
             orders.forEach(o => {
                 totalSalesAmount += parseFloat(o.price || 0);
@@ -909,6 +924,7 @@
             shopSettings.accName = document.getElementById('setAccName').value.trim();
             shopSettings.accNumber = document.getElementById('setAccNumber').value.trim();
             shopSettings.accWallet = document.getElementById('setAccWallet').value.trim();
+            shopSettings.accSlipNote = document.getElementById('setAccSlipNote').value.trim();
 
             updateShopSettingsUI();
             Swal.fire('บันทึกสำเร็จ', 'อัปเดตข้อมูลบัญชีและกฎร้านเรียบร้อย', 'success');
@@ -924,13 +940,14 @@
             document.getElementById('setAccName').value = shopSettings.accName || '';
             document.getElementById('setAccNumber').value = shopSettings.accNumber || '';
             document.getElementById('setAccWallet').value = shopSettings.accWallet || '';
+            document.getElementById('setAccSlipNote').value = shopSettings.accSlipNote || '';
 
             document.getElementById('displayAccBank').innerText = shopSettings.accBank || '-';
             document.getElementById('displayAccName').innerText = shopSettings.accName || '-';
             document.getElementById('displayAccNumber').innerText = shopSettings.accNumber || '-';
             document.getElementById('displayAccWallet').innerText = shopSettings.accWallet || '-';
+            document.getElementById('displayAccSlipNote').innerText = shopSettings.accSlipNote || '-';
 
-            // เติมข้อมูลในหน้าเติมเครดิต
             document.getElementById('topupBankInfo').innerText = (shopSettings.accBank || '-') + ' (' + (shopSettings.accName || '-') + ')';
             document.getElementById('topupNumberInfo').innerText = shopSettings.accNumber || '-';
             const topupContainer = document.getElementById('topupImgContainer');
