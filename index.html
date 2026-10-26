@@ -183,9 +183,15 @@
                     </div>
                     <p class="text-xs font-semibold text-gray-600" id="topupBankInfo">-</p>
                     <p class="text-base font-mono font-bold text-pink-900" id="topupNumberInfo">-</p>
-                    <button onclick="copyText('topupNumberInfo', 'เลขบัญชี/วอเลท')" class="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
-                        <i class="fa-solid fa-copy mr-1"></i> คัดลอกเลขบัญชี
-                    </button>
+                    
+                    <div class="flex justify-center space-x-2 pt-1">
+                        <button onclick="copyText('topupNumberInfo', 'เลขบัญชี/วอเลท')" class="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                            <i class="fa-solid fa-copy mr-1"></i> คัดลอกเลขบัญชี
+                        </button>
+                        <button onclick="copyCustomText('ซื้อขายกับpxnni', 'โน๊ตสลิป')" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                            <i class="fa-solid fa-note-sticky mr-1"></i> คัดลอกโน๊ตสลิป
+                        </button>
+                    </div>
                 </div>
 
                 <form onsubmit="handleTopupSubmit(event)" class="space-y-4">
@@ -265,14 +271,25 @@
                             <i class="fa-solid fa-copy mr-1"></i> คัดลอก
                         </button>
                     </div>
+
+                    <!-- เพิ่มปุ่มคัดลอกโน๊ตสลิปถาวรในหน้าช่องทางการชำระเงิน -->
+                    <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-rose-500 font-semibold mb-0.5">โน๊ตสลิปโอนเงิน</p>
+                            <p class="text-base font-mono font-bold text-rose-900" id="displayNoteSlip">ซื้อขายกับpxnni</p>
+                        </div>
+                        <button onclick="copyCustomText('ซื้อขายกับpxnni', 'โน๊ตสลิป')" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                            <i class="fa-solid fa-copy mr-1"></i> คัดลอกโน๊ตสลิป
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- 4. Shop Rules Page -->
         <section id="page-rules" class="tab-content hidden">
-            <div class="max-w-2xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-pink-100">
-                <div class="flex items-center space-x-3 mb-4 border-b border-gray-100 pb-3">
+            <div class="max-w-2xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-pink-100 space-y-4">
+                <div class="flex items-center space-x-3 mb-2 border-b border-gray-100 pb-3">
                     <i class="fa-solid fa-shield-halved text-2xl text-pink-400"></i>
                     <h2 class="text-xl font-bold text-gray-800">กฎและข้อตกลงของ pxnni.shop</h2>
                 </div>
@@ -280,6 +297,22 @@
                     <img id="rulesImgDisplay" src="" class="max-w-full h-auto rounded-2xl mx-auto shadow-sm border border-pink-100">
                 </div>
                 <div class="space-y-3 text-sm text-gray-600 whitespace-pre-line" id="shopRulesContent"></div>
+
+                <!-- เพิ่มช่องทางการติดต่อ LINE ในหน้ากฎแบบถาวร -->
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between mt-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center text-lg shadow-sm">
+                            <i class="fa-brands fa-line"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-emerald-600 font-semibold mb-0.5">ช่องทางการติดต่อร้าน (LINE)</p>
+                            <p class="text-base font-mono font-bold text-emerald-900" id="displayLineContact">@910szurh</p>
+                        </div>
+                    </div>
+                    <button onclick="copyCustomText('@910szurh', 'Line ID')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all">
+                        <i class="fa-solid fa-copy mr-1"></i> คัดลอก Line
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -474,7 +507,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzK2lbHnBxx1QZFCl0xVB3cQWeVQXnJHju6JPZKhj4z2ETXFFjGifXIfnuqcirtvXWi/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwt-2JCH02hMHiA_jG1R-akQbmlXMeKyekLOrpXrfy7-9Vyde0VQd9VQ9hmpA48jJo8/exec";
         const ADMIN_PASSWORD = "admin";
 
         let currentUser = null;
@@ -537,6 +570,19 @@
                     icon: 'success',
                     title: 'คัดลอกสำเร็จ!',
                     text: `คัดลอก ${label} เรียบร้อยแล้ว`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
+
+        function copyCustomText(textToCopy, label) {
+            playCuteSound();
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'คัดลอกสำเร็จ!',
+                    text: `คัดลอก ${label} "${textToCopy}" เรียบร้อยแล้ว`,
                     timer: 1500,
                     showConfirmButton: false
                 });
