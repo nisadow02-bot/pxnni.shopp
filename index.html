@@ -149,13 +149,13 @@
             <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- 2. Topup Page (เติมเงิน - อัปโหลดสลิปจากในเครื่อง) -->
+        <!-- 2. Topup Page (เติมเงิน) -->
         <section id="page-topup" class="tab-content hidden">
             <div class="max-w-xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-pastelPink/40 space-y-6">
                 <div class="text-center border-b border-gray-100 pb-4">
                     <div class="w-12 h-12 bg-pastelYellow rounded-2xl flex items-center justify-center mx-auto mb-2 text-amber-600 text-xl"><i class="fa-solid fa-credit-card"></i></div>
                     <h2 class="text-xl font-bold text-gray-800">เติมเครดิตเข้าระบบ</h2>
-                    <p class="text-xs text-gray-400">โอนเงินผ่านบัญชีร้าน แล้วอัปโหลดสลิปเพื่อรับเครดิตอนุมัติโดยแอดมิน</p>
+                    <p class="text-xs text-gray-400">โอนเงินผ่านบัญชีร้าน แล้วแจ้งสลิปเพื่อรับเครดิตอนุมัติโดยแอดมิน</p>
                 </div>
 
                 <div class="bg-pastelYellow/40 p-4 rounded-2xl border border-pastelYellowDark text-xs space-y-2">
@@ -172,8 +172,8 @@
                         <input type="number" id="topupAmount" required min="1" placeholder="เช่น 50" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-300">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">แนบรูปภาพสลิปการโอนเงิน (เลือกจากในเครื่อง)</label>
-                        <input type="file" id="topupSlipFile" accept="image/*" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-700 hover:file:bg-pink-200 cursor-pointer">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">ลิงก์รูปภาพสลิปการโอน (Image URL)</label>
+                        <input type="text" id="topupSlipUrl" required placeholder="วางลิงก์รูปภาพสลิป" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-300">
                     </div>
                     <button type="submit" class="w-full bg-gradient-to-r from-pink-400 to-purple-400 hover:opacity-90 text-white font-bold py-3 rounded-2xl shadow-sm text-sm transition-all">
                         <i class="fa-solid fa-paper-plane mr-1"></i> แจ้งเติมเงิน (ส่งข้อมูลอัตโนมัติ)
@@ -737,55 +737,32 @@
             }).then(() => { switchTab('orders'); });
         }
 
-        // แปลงไฟล์รูปภาพเป็น Base64 String
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function handleTopupSubmit(e) {
+        function handleTopupSubmit(e) {
             e.preventDefault();
             if (!currentUser) { openAuthModal(); return; }
 
             const amount = parseFloat(document.getElementById('topupAmount').value);
-            const fileInput = document.getElementById('topupSlipFile');
-            
-            if (!fileInput.files || fileInput.files.length === 0) {
-                Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกไฟล์สลิปการโอนเงิน', 'warning');
-                return;
-            }
+            const slipUrl = document.getElementById('topupSlipUrl').value.trim();
+            const nowStr = new Date().toLocaleString('th-TH');
+            const topupId = 'TOP-' + Math.floor(100000 + Math.random() * 900000);
 
-            Swal.fire({ title: 'กำลังอัปโหลดสลิป...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            const newTopup = {
+                topupId: topupId,
+                username: currentUser.username,
+                amount: amount,
+                slip: slipUrl,
+                date: nowStr,
+                status: 'รออนุมัติ'
+            };
 
-            try {
-                const imgSlipBase64 = await fileToBase64(fileInput.files[0]);
-                const nowStr = new Date().toLocaleString('th-TH');
-                const topupId = 'TOP-' + Math.floor(100000 + Math.random() * 900000);
+            topups.unshift(newTopup);
+            renderTopups();
+            if (isAdminLoggedIn) renderAdminView();
+            saveAllDataToSheet(false);
 
-                const newTopup = {
-                    topupId: topupId,
-                    username: currentUser.username,
-                    amount: amount,
-                    imgSlip: imgSlipBase64,
-                    date: nowStr,
-                    status: 'รออนุมัติ'
-                };
-
-                topups.unshift(newTopup);
-                renderTopups();
-                if (isAdminLoggedIn) renderAdminView();
-                saveAllDataToSheet(false);
-
-                document.getElementById('topupAmount').value = '';
-                fileInput.value = '';
-                Swal.fire('สำเร็จ', 'แจ้งเติมเงินเรียบร้อย รอแอดมินตรวจสอบและอนุมัติเครดิตครับ', 'success');
-            } catch (err) {
-                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัปโหลดไฟล์รูปภาพได้', 'error');
-            }
+            document.getElementById('topupAmount').value = '';
+            document.getElementById('topupSlipUrl').value = '';
+            Swal.fire('สำเร็จ', 'แจ้งเติมเงินเรียบร้อย รอแอดมินตรวจสอบและอนุมัติเครดิตครับ', 'success');
         }
 
         function renderTopups() {
@@ -886,16 +863,6 @@
             Swal.fire('สำเร็จ', 'บันทึกสินค้าเรียบร้อย', 'success');
         }
 
-        function viewSlipModal(imgSrc) {
-            Swal.fire({
-                title: 'สลิปการโอนเงิน',
-                imageUrl: imgSrc,
-                imageAlt: 'สลิปการโอนเงิน',
-                confirmButtonText: 'ปิด',
-                confirmButtonColor: '#EC4899'
-            });
-        }
-
         function renderAdminView() {
             updateProductSelectDropdown();
             const pTbody = document.getElementById('adminProductTableBody');
@@ -928,7 +895,7 @@
                             <td class="p-2.5 font-mono font-bold text-pink-600">${t.topupId}</td>
                             <td class="p-2.5 font-bold">${t.username}</td>
                             <td class="p-2.5 font-bold text-emerald-600">${t.amount} ฿</td>
-                            <td class="p-2.5"><button onclick="viewSlipModal('${t.imgSlip}')" class="text-pink-500 underline text-xs font-bold">ดูสลิป</button></td>
+                            <td class="p-2.5"><a href="${t.slip}" target="_blank" class="text-pink-500 underline text-xs">ดูสลิป</a></td>
                             <td class="p-2.5"><span class="bg-pastelYellowDark text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">${t.status}</span></td>
                             <td class="p-2.5 space-x-1">
                                 <button onclick="approveTopup('${t.topupId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-[11px] font-bold">อนุมัติ</button>
