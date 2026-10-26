@@ -172,8 +172,15 @@
                         <input type="number" id="topupAmount" required min="1" placeholder="เช่น 50" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-300">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">ลิงก์รูปภาพสลิปการโอน (Image URL)</label>
-                        <input type="text" id="topupSlipUrl" required placeholder="วางลิงก์รูปภาพสลิป" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-300">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-gray-600">ลิงก์รูปภาพสลิปการโอน (Image URL)</label>
+                            <div class="space-x-2 text-xs">
+                                <a href="https://th.imgbb.com/" target="_blank" class="text-pink-600 hover:underline font-bold"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>อัปโหลดสลิปที่นี่ (ImgBB)</a>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" onclick="openSlipGuideModal()" class="text-purple-600 hover:underline font-bold"><i class="fa-solid fa-circle-question mr-1"></i>วิธีทำรูปสลิปเป็นลิงก์</button>
+                            </div>
+                        </div>
+                        <input type="text" id="topupSlipUrl" required placeholder="วางลิงก์รูปภาพสลิปที่นี่" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-300">
                     </div>
                     <button type="submit" class="w-full bg-gradient-to-r from-pink-400 to-purple-400 hover:opacity-90 text-white font-bold py-3 rounded-2xl shadow-sm text-sm transition-all">
                         <i class="fa-solid fa-paper-plane mr-1"></i> แจ้งเติมเงิน (ส่งข้อมูลอัตโนมัติ)
@@ -289,7 +296,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-gray-100 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-pink-900 flex items-center"><i class="fa-solid fa-sliders text-pink-500 mr-2"></i> ระบบจัดการหลังบ้าน pxnni.shop</h2>
-                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า อนุมัติยอดเติมเงิน และตั้งค่าระบบ</p>
+                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า ออนุมัติยอดเติมเงิน และตั้งค่าระบบ</p>
                     </div>
                     <button onclick="playCuteSound(); adminLogout()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 text-xs font-bold px-3 py-2 rounded-xl transition-all">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> ออกจากแอดมิน
@@ -464,6 +471,24 @@
         </div>
     </div>
 
+    <!-- Slip Guide Modal -->
+    <div id="slipGuideModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-pastelPink relative">
+            <button onclick="closeSlipGuideModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-4">
+                <h3 class="text-base font-bold text-gray-800"><i class="fa-solid fa-circle-question text-pink-500 mr-1"></i> วิธีแปลงรูปสลิปเป็นลิงก์</h3>
+            </div>
+            <div class="rounded-2xl overflow-hidden border border-pastelPink/50 shadow-inner bg-gray-50 mb-4">
+                <img src="https://i.ibb.co/WvNKn4W1/phonto.jpg" alt="วิธีอัปโหลดสลิป" class="w-full h-auto object-cover">
+            </div>
+            <div class="text-center">
+                <button onclick="closeSlipGuideModal()" class="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-sm transition-all">เข้าใจแล้ว</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaGir0jY-f8rAZMHp86qrXSt582btPFR3awsO0FBuh-GGrI8_BPTibPhgPsQgc7luV/exec";
         const ADMIN_PASSWORD = "admin";
@@ -590,6 +615,16 @@
         function adminLogout() { isAdminLoggedIn = false; switchTab('shop'); }
         function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
         function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        // Functions for Slip Guide Modal
+        function openSlipGuideModal() {
+            playCuteSound();
+            document.getElementById('slipGuideModal').classList.remove('hidden');
+        }
+        function closeSlipGuideModal() {
+            playCuteSound();
+            document.getElementById('slipGuideModal').classList.add('hidden');
+        }
 
         function handleLogin(e) {
             e.preventDefault();
