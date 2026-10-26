@@ -205,7 +205,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fa-solid fa-image mr-1 text-pink-500"></i> อัปโหลดรูปสลิปการโอนเงิน (เลือกจากเครื่องมือถือได้เลย)</label>
-                        <input type="file" id="topupSlipFile" accept="image/*" onchange="previewSlipImage(event)" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer border border-gray-200 rounded-xl p-1.5">
+                        <input type="file" id="topupSlipFile" accept="image/*" required onchange="previewSlipImage(event)" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer border border-gray-200 rounded-xl p-1.5">
                         <div id="slipPreviewContainer" class="hidden mt-3 text-center">
                             <img id="slipPreviewImg" class="max-h-40 mx-auto rounded-xl border border-pink-200 shadow-sm">
                         </div>
@@ -329,7 +329,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-gray-100 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-pink-800 flex items-center"><i class="fa-solid fa-sliders text-pink-500 mr-2"></i> ระบบจัดการหลังบ้าน pxnni.shop</h2>
-                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า ตั้งค่าบัญชีชำระเงิน และดูยอดขาย Sales</p>
+                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า ตั้งค่าบัญชีชำระเงิน และตรวจสอบรายการเติมเครดิต</p>
                     </div>
                     <button onclick="playCuteSound(); adminLogout()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 text-xs font-bold px-3 py-2 rounded-xl transition-all">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> ออกจากแอดมิน
@@ -385,7 +385,7 @@
                                 <textarea id="pDesc" rows="2" placeholder="รายละเอียด..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"></textarea>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">รหัส / บัญชีสินค้า (คั่นด้วยสัญลักษณ์ <span class="text-pink-600 font-bold">|</span> เช่น code1 | code2 | code3)</label>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">รหัส / บัญชีสินค้า (คั่นด้วย <span class="text-pink-600 font-bold">|</span> เช่น code1 | code2)</label>
                                 <textarea id="pCodes" rows="3" placeholder="email1:pass1 | email2:pass2" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono text-xs"></textarea>
                             </div>
                         </div>
@@ -420,6 +420,22 @@
                                     <tr><th class="p-2.5">ออเดอร์</th><th class="p-2.5">ลูกค้า</th><th class="p-2.5">สินค้า</th><th class="p-2.5">ราคา</th><th class="p-2.5">รหัสที่ได้รับ</th><th class="p-2.5">วันที่</th></tr>
                                 </thead>
                                 <tbody id="adminAllOrdersTableBody" class="divide-y divide-gray-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Admin Topup History (เพิ่มใหม่ตามคำขอ) -->
+                    <div class="bg-amber-50/40 p-5 rounded-2xl border border-amber-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-coins mr-1 text-amber-500"></i> ประวัติการเติมเครดิตทั้งหมด (Topups)</h3>
+                            <span id="adminTotalTopups" class="text-xs bg-amber-200 text-amber-900 font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
+                        </div>
+                        <div class="overflow-x-auto max-h-80 overflow-y-auto">
+                            <table class="w-full text-left text-xs text-gray-600">
+                                <thead class="bg-amber-100 text-amber-900 font-semibold sticky top-0">
+                                    <tr><th class="p-2.5">Topup ID</th><th class="p-2.5">ชื่อผู้ใช้</th><th class="p-2.5">จำนวนเงิน</th><th class="p-2.5">รูปสลิป</th><th class="p-2.5">วันที่</th><th class="p-2.5">สถานะ</th></tr>
+                                </thead>
+                                <tbody id="adminTopupsTableBody" class="divide-y divide-gray-100 bg-white"></tbody>
                             </table>
                         </div>
                     </div>
@@ -524,6 +540,7 @@
 
         let products = [];
         let orders = [];
+        let topups = []; // อาเรย์เก็บประวัติการเติมเครดิต
         let shopSettings = {
             rules: "1. ยกฮอตเมล มี2ชั้น\n2. เฟสเขียว ไม่ซ้อน มีประกันดึงตลอดชีพ\n3. หากพบปัญหากรุณาติดต่อแอดมินทันที",
             rulesImgUrl: "",
@@ -704,6 +721,21 @@
             
             currentUser.credit = (currentUser.credit || 0) + amount;
             updateUserUI();
+
+            // บันทึกรายการลงในตาราง Topups
+            const newTopup = {
+                topupId: 'TOP-' + Math.floor(100000 + Math.random() * 900000),
+                username: currentUser.username,
+                amount: amount,
+                slip: uploadedSlipBase64 || 'https://placehold.co/100x100?text=No+Slip',
+                date: new Date().toLocaleString('th-TH'),
+                status: 'สำเร็จ (อัตโนมัติ)'
+            };
+
+            topups.unshift(newTopup);
+            renderAdminView();
+            autoSaveAfterPurchase(); // ซิงค์ข้อมูลข้ามเครื่องทันที
+
             document.getElementById('topupAmount').value = '';
             document.getElementById('topupRef').value = '';
             document.getElementById('topupSlipFile').value = '';
@@ -718,6 +750,18 @@
                 showConfirmButton: false
             }).then(() => {
                 switchTab('shop');
+            });
+        }
+
+        function viewSlipImageModal(imgUrl) {
+            Swal.fire({
+                title: 'หลักฐานสลิปการโอนเงิน',
+                imageUrl: imgUrl,
+                imageAlt: 'Slip Image',
+                imageWidth: '100%',
+                maxHeight: '400px',
+                confirmButtonText: 'ปิด',
+                confirmButtonColor: '#EC4899'
             });
         }
 
@@ -773,7 +817,7 @@
             Swal.fire({
                 title: `สั่งซื้อ "${product.name}"`,
                 html: `
-                    <p class="text-xs text-gray-500 mb-2">ราคาราคาต่อชิ้น: <strong class="text-pink-600">${product.price} ฿</strong> (คงเหลือ ${maxQuantity} ชิ้น)</p>
+                    <p class="text-xs text-gray-500 mb-2">ราคาต่อชิ้น: <strong class="text-pink-600">${product.price} ฿</strong> (คงเหลือ ${maxQuantity} ชิ้น)</p>
                     <div class="text-left max-w-xs mx-auto">
                         <label class="block text-xs font-semibold text-gray-600 mb-1">ระบุจำนวนที่ต้องการซื้อ:</label>
                         <input type="number" id="buyQuantityInput" min="1" max="${maxQuantity}" value="1" class="w-full px-3 py-2 border rounded-xl text-sm text-center font-bold focus:ring-2 focus:ring-pink-300">
@@ -817,7 +861,6 @@
             currentUser.credit -= totalPrice;
             updateUserUI();
 
-            // ตัดรอดตามจำนวนที่ซื้อ
             const deliveredCodesArray = product.codes.splice(0, quantity);
             const combinedCodesText = deliveredCodesArray.join('\n');
 
@@ -836,7 +879,6 @@
             renderAdminView();
             autoSaveAfterPurchase();
 
-            // แสดงหน้าต่างรับรหัสสินค้าพร้อมปุ่มคัดลอกทั้งหมด
             Swal.fire({
                 icon: 'success',
                 title: 'สั่งซื้อสำเร็จ!',
@@ -867,7 +909,7 @@
         }
 
         function autoSaveAfterPurchase() {
-            const payload = { products: products, orders: orders, settings: shopSettings };
+            const payload = { products: products, orders: orders, topups: topups, settings: shopSettings };
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
             window[callbackName] = function(response) {
                 delete window[callbackName];
@@ -956,7 +998,6 @@
             const rawCodes = document.getElementById('pCodes').value.trim();
             let imgUrl = document.getElementById('pImgUrl').value.trim() || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60";
             
-            // แยกด้วยเครื่องหมาย | ตามที่คุณต้องการ
             const newCodesArray = rawCodes ? rawCodes.split('|').map(c => c.trim()).filter(c => c.length > 0) : [];
 
             if (selectedId) {
@@ -1013,7 +1054,7 @@
             document.getElementById('adminTotalOrders').innerText = `${orders.length} รายการ`;
             oTbody.innerHTML = '';
             if (orders.length === 0) {
-                oTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">ยังไม่มีประวัติ</td></tr>`;
+                oTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">ยังไม่มีประวัติการสั่งซื้อ</td></tr>`;
             } else {
                 orders.forEach(o => {
                     oTbody.innerHTML += `
@@ -1024,6 +1065,29 @@
                             <td class="p-2.5 text-pink-600 font-bold">${o.price} ฿</td>
                             <td class="p-2.5 font-mono text-xs text-purple-900 font-bold whitespace-pre-line">${o.code}</td>
                             <td class="p-2.5 text-[11px] text-gray-400">${o.date}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // แสดงประวัติการเติมเครดิตในตาราง Topups (หน้าแอดมิน)
+            const tTbody = document.getElementById('adminTopupsTableBody');
+            document.getElementById('adminTotalTopups').innerText = `${topups.length} รายการ`;
+            tTbody.innerHTML = '';
+            if (topups.length === 0) {
+                tTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">ยังไม่มีประวัติการเติมเครดิต</td></tr>`;
+            } else {
+                topups.forEach(t => {
+                    tTbody.innerHTML += `
+                        <tr class="hover:bg-amber-50/50 transition-all">
+                            <td class="p-2.5 font-mono font-bold text-xs text-amber-700">${t.topupId}</td>
+                            <td class="p-2.5 font-medium text-gray-700">${t.username}</td>
+                            <td class="p-2.5 font-bold text-amber-600">+${t.amount} ฿</td>
+                            <td class="p-2.5">
+                                <img src="${t.slip}" onclick="viewSlipImageModal('${t.slip}')" class="w-10 h-10 rounded-lg object-cover cursor-pointer border border-amber-200 hover:scale-105 transition-all shadow-xs" title="คลิกเพื่อดูสลิปขนาดใหญ่">
+                            </td>
+                            <td class="p-2.5 text-[11px] text-gray-400">${t.date}</td>
+                            <td class="p-2.5"><span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full text-[10px]">${t.status}</span></td>
                         </tr>
                     `;
                 });
@@ -1084,7 +1148,7 @@
         function saveAllDataToSheet() {
             playCuteSound();
             Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            const payload = { products: products, orders: orders, settings: shopSettings };
+            const payload = { products: products, orders: orders, topups: topups, settings: shopSettings };
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
 
             window[callbackName] = function(response) {
@@ -1113,6 +1177,7 @@
                 if (response && response.status === 'success') {
                     if (response.products) products = response.products;
                     if (response.orders) orders = response.orders;
+                    if (response.topups) topups = response.topups;
                     if (response.settings) shopSettings = response.settings;
 
                     renderProducts();
