@@ -424,7 +424,7 @@
                         </div>
                     </div>
 
-                    <!-- Admin Topup History (เพิ่มใหม่ตามคำขอ) -->
+                    <!-- Admin Topup History -->
                     <div class="bg-amber-50/40 p-5 rounded-2xl border border-amber-100">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-coins mr-1 text-amber-500"></i> ประวัติการเติมเครดิตทั้งหมด (Topups)</h3>
@@ -540,7 +540,7 @@
 
         let products = [];
         let orders = [];
-        let topups = []; // อาเรย์เก็บประวัติการเติมเครดิต
+        let topups = [];
         let shopSettings = {
             rules: "1. ยกฮอตเมล มี2ชั้น\n2. เฟสเขียว ไม่ซ้อน มีประกันดึงตลอดชีพ\n3. หากพบปัญหากรุณาติดต่อแอดมินทันที",
             rulesImgUrl: "",
@@ -644,6 +644,15 @@
 
         window.onload = function() {
             createRosePetals();
+            
+            const savedUser = localStorage.getItem('pxnni_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateUserUI();
+                } catch(e) {}
+            }
+
             renderProducts();
             renderOrders();
             renderAdminView();
@@ -690,13 +699,21 @@
             playCuteSound();
             const username = document.getElementById('loginUsername').value.trim();
             if (!username) return;
+            
             currentUser = { username: username, credit: 0 };
+            localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
+            
             closeAuthModal();
             updateUserUI();
             renderOrders();
         }
 
-        function logout() { currentUser = null; updateUserUI(); switchTab('shop'); }
+        function logout() { 
+            currentUser = null; 
+            localStorage.removeItem('pxnni_user'); 
+            updateUserUI(); 
+            switchTab('shop'); 
+        }
 
         function updateUserUI() {
             const userProfile = document.getElementById('userProfile');
@@ -720,9 +737,9 @@
             const ref = document.getElementById('topupRef').value;
             
             currentUser.credit = (currentUser.credit || 0) + amount;
+            localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
             updateUserUI();
 
-            // บันทึกรายการลงในตาราง Topups
             const newTopup = {
                 topupId: 'TOP-' + Math.floor(100000 + Math.random() * 900000),
                 username: currentUser.username,
@@ -734,7 +751,9 @@
 
             topups.unshift(newTopup);
             renderAdminView();
-            autoSaveAfterPurchase(); // ซิงค์ข้อมูลข้ามเครื่องทันที
+            
+            // ส่งข้อมูลและรูปสลิปขึ้น Google Sheet อัตโนมัติทันที
+            autoSaveAfterPurchase();
 
             document.getElementById('topupAmount').value = '';
             document.getElementById('topupRef').value = '';
@@ -859,6 +878,7 @@
         function executePurchase(product, quantity, totalPrice) {
             playCuteSound();
             currentUser.credit -= totalPrice;
+            localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
             updateUserUI();
 
             const deliveredCodesArray = product.codes.splice(0, quantity);
@@ -1070,7 +1090,6 @@
                 });
             }
 
-            // แสดงประวัติการเติมเครดิตในตาราง Topups (หน้าแอดมิน)
             const tTbody = document.getElementById('adminTopupsTableBody');
             document.getElementById('adminTotalTopups').innerText = `${topups.length} รายการ`;
             tTbody.innerHTML = '';
