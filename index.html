@@ -153,7 +153,7 @@
             </div>
             <button onclick="playCuteSound(); fetchDataFromSheet(true)" class="bg-white hover:bg-pink-50 text-xs font-semibold px-3 py-2 rounded-xl text-pink-600 shadow-sm border border-pink-100 transition-all flex items-center space-x-1 whitespace-nowrap">
                 <i class="fa-solid fa-arrows-rotate text-pink-400"></i>
-                <span class="hidden sm:inline">อัปเดตสต๊อกล่าสุด</span>
+                <span class="hidden sm:inline">อัปเดตข้อมูลล่าสุด</span>
             </button>
         </div>
 
@@ -172,8 +172,8 @@
                 <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
                     <i class="fa-solid fa-coins text-2xl text-amber-500"></i>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-800">เติมเครดิตเข้าระบบ</h2>
-                        <p class="text-xs text-gray-400">สแกน QR Code หรือโอนเงินผ่านบัญชีร้านเพื่อเติมเครดิต</p>
+                        <h2 class="text-xl font-bold text-gray-800">แจ้งเติมเครดิต (รอแอดมินอนุมัติ)</h2>
+                        <p class="text-xs text-gray-400">โอนเงินผ่านบัญชีร้านและแนบสลิปเพื่อให้แอดมินตรวจสอบ</p>
                     </div>
                 </div>
 
@@ -211,7 +211,7 @@
                         </div>
                     </div>
                     <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-3 rounded-xl text-sm shadow-md hover:opacity-90 transition-all">
-                        <i class="fa-solid fa-paper-plane mr-1"></i> แจ้งเติมเครดิต
+                        <i class="fa-solid fa-paper-plane mr-1"></i> แจ้งเติมเครดิต (รออนุมัติ)
                     </button>
                 </form>
             </div>
@@ -329,7 +329,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-gray-100 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-pink-800 flex items-center"><i class="fa-solid fa-sliders text-pink-500 mr-2"></i> ระบบจัดการหลังบ้าน pxnni.shop</h2>
-                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า ตั้งค่าบัญชีชำระเงิน และตรวจสอบรายการเติมเครดิต</p>
+                        <p class="text-xs text-gray-500">จัดการสต๊อกสินค้า อนุมัติการเติมเครดิต และตรวจสอบยอดขาย</p>
                     </div>
                     <button onclick="playCuteSound(); adminLogout()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 text-xs font-bold px-3 py-2 rounded-xl transition-all">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> ออกจากแอดมิน
@@ -355,6 +355,33 @@
                                 <p class="text-xs text-gray-400 font-semibold">สินค้าคงเหลือรวม</p>
                                 <p class="text-xl font-bold text-emerald-600 mt-1" id="adminTotalStockCount">0 ชิ้น</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Topup Approval Panel (อนุมัติสลิปเติมเครดิตจากคนละเครื่อง) -->
+                    <div class="bg-amber-50/50 p-5 rounded-2xl border border-amber-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-sm text-amber-900 flex items-center">
+                                <i class="fa-solid fa-coins mr-2 text-amber-500"></i> ตรวจสอบและอนุมัติการเติมเครดิต (Topup Approvals)
+                            </h3>
+                            <button onclick="playCuteSound(); fetchDataFromSheet(true)" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all">
+                                <i class="fa-solid fa-arrows-rotate mr-1"></i> โหลดสลิปล่าสุด (จากเครื่องอื่น)
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                            <table class="w-full text-left text-xs text-gray-600">
+                                <thead class="bg-amber-100 text-amber-900 font-semibold sticky top-0">
+                                    <tr>
+                                        <th class="p-2.5">Topup ID</th>
+                                        <th class="p-2.5">ผู้ใช้</th>
+                                        <th class="p-2.5">จำนวนเงิน</th>
+                                        <th class="p-2.5">รูปสลิป</th>
+                                        <th class="p-2.5">วันที่</th>
+                                        <th class="p-2.5">สถานะ / จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTopupsTableBody" class="divide-y divide-gray-100 bg-white"></tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -420,22 +447,6 @@
                                     <tr><th class="p-2.5">ออเดอร์</th><th class="p-2.5">ลูกค้า</th><th class="p-2.5">สินค้า</th><th class="p-2.5">ราคา</th><th class="p-2.5">รหัสที่ได้รับ</th><th class="p-2.5">วันที่</th></tr>
                                 </thead>
                                 <tbody id="adminAllOrdersTableBody" class="divide-y divide-gray-100 bg-white"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Admin Topup History -->
-                    <div class="bg-amber-50/40 p-5 rounded-2xl border border-amber-100">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-coins mr-1 text-amber-500"></i> ประวัติการเติมเครดิตทั้งหมด (Topups)</h3>
-                            <span id="adminTotalTopups" class="text-xs bg-amber-200 text-amber-900 font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
-                        </div>
-                        <div class="overflow-x-auto max-h-80 overflow-y-auto">
-                            <table class="w-full text-left text-xs text-gray-600">
-                                <thead class="bg-amber-100 text-amber-900 font-semibold sticky top-0">
-                                    <tr><th class="p-2.5">Topup ID</th><th class="p-2.5">ชื่อผู้ใช้</th><th class="p-2.5">จำนวนเงิน</th><th class="p-2.5">รูปสลิป</th><th class="p-2.5">วันที่</th><th class="p-2.5">สถานะ</th></tr>
-                                </thead>
-                                <tbody id="adminTopupsTableBody" class="divide-y divide-gray-100 bg-white"></tbody>
                             </table>
                         </div>
                     </div>
@@ -541,6 +552,7 @@
         let products = [];
         let orders = [];
         let topups = [];
+        let usersList = []; // เก็บเครดิตผู้ใช้ทั้งหมดเพื่อซิงค์ข้ามเครื่อง
         let shopSettings = {
             rules: "1. ยกฮอตเมล มี2ชั้น\n2. เฟสเขียว ไม่ซ้อน มีประกันดึงตลอดชีพ\n3. หากพบปัญหากรุณาติดต่อแอดมินทันที",
             rulesImgUrl: "",
@@ -649,14 +661,9 @@
             if (savedUser) {
                 try {
                     currentUser = JSON.parse(savedUser);
-                    updateUserUI();
                 } catch(e) {}
             }
 
-            renderProducts();
-            renderOrders();
-            renderAdminView();
-            updateShopSettingsUI();
             fetchDataFromSheet(false);
         };
 
@@ -684,6 +691,7 @@
             if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
                 isAdminLoggedIn = true;
                 closeAdminModal();
+                fetchDataFromSheet(false); // โหลดข้อมูลล่าสุดจากเครื่องอื่นก่อนเข้าหน้าแอดมิน
                 switchTab('admin');
             } else {
                 Swal.fire('ข้อผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
@@ -700,7 +708,11 @@
             const username = document.getElementById('loginUsername').value.trim();
             if (!username) return;
             
-            currentUser = { username: username, credit: 0 };
+            // ค้นหาเครดิตจาก usersList หรือสร้างใหม่
+            let found = usersList.find(u => u.username === username);
+            let credit = found ? found.credit : 0;
+
+            currentUser = { username: username, credit: credit };
             localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
             
             closeAuthModal();
@@ -719,6 +731,10 @@
             const userProfile = document.getElementById('userProfile');
             const loginBtn = document.getElementById('loginBtn');
             if (currentUser) {
+                // อัปเดตเครดิตล่าสุดจากรายการผู้ใช้ส่วนกลาง
+                let found = usersList.find(u => u.username === currentUser.username);
+                if (found) currentUser.credit = found.credit;
+
                 userProfile.classList.remove('hidden');
                 loginBtn.classList.add('hidden');
                 document.getElementById('userNameDisplay').innerText = currentUser.username;
@@ -729,6 +745,7 @@
             }
         }
 
+        // ส่งสลิปแจ้งเติมเงิน (สถานะ: รออนุมัติ)
         function handleTopupSubmit(e) {
             e.preventDefault();
             if (!currentUser) { openAuthModal(); return; }
@@ -736,24 +753,24 @@
             const amount = parseFloat(document.getElementById('topupAmount').value);
             const ref = document.getElementById('topupRef').value;
             
-            currentUser.credit = (currentUser.credit || 0) + amount;
-            localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
-            updateUserUI();
-
             const newTopup = {
                 topupId: 'TOP-' + Math.floor(100000 + Math.random() * 900000),
                 username: currentUser.username,
                 amount: amount,
                 slip: uploadedSlipBase64 || 'https://placehold.co/100x100?text=No+Slip',
                 date: new Date().toLocaleString('th-TH'),
-                status: 'สำเร็จ (อัตโนมัติ)'
+                status: 'รออนุมัติ'
             };
 
             topups.unshift(newTopup);
-            renderAdminView();
             
-            // ส่งข้อมูลและรูปสลิปขึ้น Google Sheet อัตโนมัติทันที
-            autoSaveAfterPurchase();
+            // อัปเดตรายชื่อผู้ใช้ส่วนกลาง
+            let userEntry = usersList.find(u => u.username === currentUser.username);
+            if (!userEntry) {
+                usersList.push({ username: currentUser.username, credit: currentUser.credit || 0 });
+            }
+
+            autoSaveAfterPurchase(); // ซิงค์ข้อมูลลง Google Sheet ทันทีเพื่อให้เครื่องแอดมินเห็น
 
             document.getElementById('topupAmount').value = '';
             document.getElementById('topupRef').value = '';
@@ -763,12 +780,76 @@
 
             Swal.fire({
                 icon: 'success',
-                title: 'แจ้งเติมเครดิตสำเร็จ!',
-                text: `ระบบได้เพิ่มเครดิตจำนวน ${amount} บาท ให้คุณเรียบร้อยแล้ว`,
-                timer: 2000,
-                showConfirmButton: false
+                title: 'ส่งสลิปแจ้งเติมเงินสำเร็จ!',
+                text: `ระบบได้บันทึกรายการของคุณแล้ว กรุณารอแอดมินตรวจสอบและอนุมัติเครดิต`,
+                confirmButtonColor: '#EC4899'
             }).then(() => {
                 switchTab('shop');
+            });
+        }
+
+        // แอดมินกดอนุมัติเครดิต (ทำงานจากคนละเครื่องได้)
+        function approveTopup(topupId) {
+            playCuteSound();
+            let topup = topups.find(t => t.topupId === topupId);
+            if (!topup || topup.status !== 'รออนุมัติ') return;
+
+            Swal.fire({
+                title: `ยืนยันการอนุมัติยอด ${topup.amount} ฿?`,
+                text: `ให้กับผู้ใช้: ${topup.username}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'อนุมัติเครดิต',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#10B981'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    topup.status = 'อนุมัติแล้ว';
+
+                    // เพิ่มเครดิตให้ User ใน usersList
+                    let userEntry = usersList.find(u => u.username === topup.username);
+                    if (userEntry) {
+                        userEntry.credit += topup.amount;
+                    } else {
+                        usersList.push({ username: topup.username, credit: topup.amount });
+                    }
+
+                    // บันทึกซิงค์ข้อมูลทั้งหมดลง Google Sheet ข้ามเครื่องทันที
+                    autoSaveAfterPurchase();
+                    renderAdminView();
+                    updateUserUI();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'อนุมัติสำเร็จ!',
+                        text: `เพิ่มเครดิต ${topup.amount} บาท ให้ ${topup.username} เรียบร้อยแล้ว`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // แอดมินกดปฏิเสธ
+        function rejectTopup(topupId) {
+            playCuteSound();
+            let topup = topups.find(t => t.topupId === topupId);
+            if (!topup) return;
+
+            Swal.fire({
+                title: 'ปฏิเสธรายการนี้?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันปฏิเสธ',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#EF4444'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    topup.status = 'ปฏิเสธ';
+                    autoSaveAfterPurchase();
+                    renderAdminView();
+                    Swal.fire('อัปเดตสถานะแล้ว', 'ปฏิเสธรายการเติมเงินนี้เรียบร้อย', 'success');
+                }
             });
         }
 
@@ -878,6 +959,11 @@
         function executePurchase(product, quantity, totalPrice) {
             playCuteSound();
             currentUser.credit -= totalPrice;
+            
+            // อัปเดตเครดิตลงใน usersList ส่วนกลาง
+            let userEntry = usersList.find(u => u.username === currentUser.username);
+            if (userEntry) userEntry.credit = currentUser.credit;
+
             localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
             updateUserUI();
 
@@ -929,7 +1015,7 @@
         }
 
         function autoSaveAfterPurchase() {
-            const payload = { products: products, orders: orders, topups: topups, settings: shopSettings };
+            const payload = { products: products, orders: orders, topups: topups, users: usersList, settings: shopSettings };
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
             window[callbackName] = function(response) {
                 delete window[callbackName];
@@ -1090,13 +1176,27 @@
                 });
             }
 
+            // แสดงตารางคำขอเติมเครดิตในหน้าแอดมิน (พร้อมปุ่มกดอนุมัติ)
             const tTbody = document.getElementById('adminTopupsTableBody');
-            document.getElementById('adminTotalTopups').innerText = `${topups.length} รายการ`;
             tTbody.innerHTML = '';
             if (topups.length === 0) {
-                tTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">ยังไม่มีประวัติการเติมเครดิต</td></tr>`;
+                tTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">ยังไม่มีรายการแจ้งเติมเครดิต</td></tr>`;
             } else {
                 topups.forEach(t => {
+                    let statusBadge = '';
+                    if (t.status === 'รออนุมัติ') {
+                        statusBadge = `
+                            <div class="flex space-x-1">
+                                <button onclick="approveTopup('${t.topupId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-xs">อนุมัติ</button>
+                                <button onclick="rejectTopup('${t.topupId}')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-xs">ปฏิเสธ</button>
+                            </div>
+                        `;
+                    } else if (t.status === 'อนุมัติแล้ว') {
+                        statusBadge = `<span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">อนุมัติแล้ว</span>`;
+                    } else {
+                        statusBadge = `<span class="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-full text-[10px]">ปฏิเสธ</span>`;
+                    }
+
                     tTbody.innerHTML += `
                         <tr class="hover:bg-amber-50/50 transition-all">
                             <td class="p-2.5 font-mono font-bold text-xs text-amber-700">${t.topupId}</td>
@@ -1106,7 +1206,7 @@
                                 <img src="${t.slip}" onclick="viewSlipImageModal('${t.slip}')" class="w-10 h-10 rounded-lg object-cover cursor-pointer border border-amber-200 hover:scale-105 transition-all shadow-xs" title="คลิกเพื่อดูสลิปขนาดใหญ่">
                             </td>
                             <td class="p-2.5 text-[11px] text-gray-400">${t.date}</td>
-                            <td class="p-2.5"><span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full text-[10px]">${t.status}</span></td>
+                            <td class="p-2.5">${statusBadge}</td>
                         </tr>
                     `;
                 });
@@ -1167,7 +1267,7 @@
         function saveAllDataToSheet() {
             playCuteSound();
             Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            const payload = { products: products, orders: orders, topups: topups, settings: shopSettings };
+            const payload = { products: products, orders: orders, topups: topups, users: usersList, settings: shopSettings };
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
 
             window[callbackName] = function(response) {
@@ -1186,7 +1286,7 @@
         }
 
         function fetchDataFromSheet(showNotify = false) {
-            if (showNotify) Swal.fire({ title: 'กำลังอัปเดตสต๊อก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            if (showNotify) Swal.fire({ title: 'กำลังดึงข้อมูลล่าสุด...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
             window[callbackName] = function(response) {
@@ -1197,14 +1297,25 @@
                     if (response.products) products = response.products;
                     if (response.orders) orders = response.orders;
                     if (response.topups) topups = response.topups;
+                    if (response.users) usersList = response.users;
                     if (response.settings) shopSettings = response.settings;
+
+                    // อัปเดตเครดิต User ปัจจุบันจากข้อมูลส่วนกลาง
+                    if (currentUser) {
+                        let found = usersList.find(u => u.username === currentUser.username);
+                        if (found) {
+                            currentUser.credit = found.credit;
+                            localStorage.setItem('pxnni_user', JSON.stringify(currentUser));
+                        }
+                    }
 
                     renderProducts();
                     renderOrders();
                     renderAdminView();
                     updateShopSettingsUI();
+                    updateUserUI();
 
-                    if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!', timer: 1200, showConfirmButton: false });
+                    if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลเรียบร้อย!', timer: 1200, showConfirmButton: false });
                 }
             };
 
