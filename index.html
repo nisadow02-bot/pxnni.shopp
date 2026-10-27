@@ -1117,25 +1117,17 @@
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
             const payload = { products: products, orders: orders, topups: topups, sales: sales, users: users, settings: shopSettings };
+            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
 
-            fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (showAlert) {
-                    Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
+            window[callbackName] = function(response) {
+                delete window[callbackName];
+                if (document.body.contains(script)) document.body.removeChild(script);
+                if (response && response.status === 'success') {
+                    if (showAlert) Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
+                } else {
+                    if (showAlert) Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('Save error:', error);
-                if (showAlert) {
-                    Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
-                }
-            });
-        }
+            };
 
             const script = document.createElement('script');
             script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
