@@ -597,13 +597,18 @@
         };
 
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('bg-pastelPink/40'));
-            
-            const targetPage = document.getElementById(`page-${tabId}`);
-            if (targetPage) targetPage.classList.remove('hidden');
-            const targetTab = document.getElementById(`tab-${tabId}`);
-            if (targetTab) targetTab.classList.add('bg-pastelPink/40');
+            try {
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('bg-pastelPink/40'));
+                
+                const targetPage = document.getElementById(`page-${tabId}`);
+                if (targetPage) targetPage.classList.remove('hidden');
+                
+                const targetTab = document.getElementById(`tab-${tabId}`);
+                if (targetTab) targetTab.classList.add('bg-pastelPink/40');
+            } catch (err) {
+                console.error("SwitchTab error:", err);
+            }
         }
 
         function checkAdminAccess() {
@@ -943,7 +948,6 @@
             const rawCodes = document.getElementById('pCodes').value.trim();
             let imgUrl = document.getElementById('pImgUrl').value.trim() || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60";
             
-            // แยกสต๊อกด้วยเครื่องหมาย | สำหรับคั่นแต่ละชิ้นสินค้า
             const chunks = rawCodes ? rawCodes.split('|').map(c => c.trim()).filter(c => c.length > 0) : [];
             const newItemsArray = [];
 
@@ -1113,11 +1117,10 @@
             else { accContainer.classList.add('hidden'); }
         }
 
-              function saveAllDataToSheet(showAlert = true) {
+        function saveAllDataToSheet(showAlert = true) {
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
-            // ตัดประวัติการขายหรือออร์เดอร์ที่เก่าเกินไปออกบางส่วน เพื่อไม่ให้ก้อนข้อมูลใหญ่เกินขีดจำกัดของ URL
-            const compressedSales = sales.slice(0, 50); // เก็บแค่ 50 รายการล่าสุด
+            const compressedSales = sales.slice(0, 50);
             const compressedOrders = orders.slice(0, 50);
 
             const payload = { 
@@ -1142,25 +1145,17 @@
             };
 
             const jsonString = JSON.stringify(payload);
-            
-            // เช็คความยาว ถ้าใหญ่เกินไปให้แจ้งเตือน หรือส่งแบบย่อ
             const script = document.createElement('script');
             script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(jsonString)}`;
             
-            // ดักจับกรณีโหลดสคริปต์นานเกิน 8 วินาที (ป้องกันการหมุนค้างไม่ยอมหยุด)
             const timeout = setTimeout(() => {
                 if (window[callbackName]) {
                     delete window[callbackName];
                     if (document.body.contains(script)) document.body.removeChild(script);
-                    if (showAlert) Swal.fire('สำเร็จ (บันทึกเบื้องหลัง)', 'ส่งข้อมูลไปยังชีตเรียบร้อยครับ', 'success');
+                    if (showAlert) Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'ส่งข้อมูลไปยังชีตเรียบร้อยครับ', timer: 1500, showConfirmButton: false });
                 }
             }, 8000);
 
-            document.body.appendChild(script);
-        }
-
-            const script = document.createElement('script');
-            script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
             document.body.appendChild(script);
         }
 
@@ -1172,32 +1167,43 @@
                 delete window[callbackName];
                 if (document.body.contains(script)) document.body.removeChild(script);
 
-                if (response && response.status === 'success') {
-                    if (response.products) products = response.products;
-                    if (response.orders) orders = response.orders;
-                    if (response.topups) topups = response.topups;
-                    if (response.sales) sales = response.sales;
-                    if (response.users) users = response.users;
-                    if (response.settings) shopSettings = response.settings;
+                try {
+                    if (response && response.status === 'success') {
+                        if (Array.isArray(response.products)) products = response.products;
+                        if (Array.isArray(response.orders)) orders = response.orders;
+                        if (Array.isArray(response.topups)) topups = response.topups;
+                        if (Array.isArray(response.sales)) sales = response.sales;
+                        if (Array.isArray(response.users)) users = response.users;
+                        if (response.settings) shopSettings = response.settings;
 
-                    if (currentUser) {
-                        let updatedUser = users.find(u => u.username === currentUser.username);
-                        if (updatedUser) currentUser = updatedUser;
+                        if (currentUser) {
+                            let updatedUser = users.find(u => u.username === currentUser.username);
+                            if (updatedUser) currentUser = updatedUser;
+                        }
+
+                        renderProducts();
+                        renderOrders();
+                        renderTopups();
+                        if (isAdminLoggedIn) renderAdminView();
+                        updateShopSettingsUI();
+                        updateUserUI();
+
+                        if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!', timer: 1200, showConfirmButton: false });
                     }
-
-                    renderProducts();
-                    renderOrders();
-                    renderTopups();
-                    if (isAdminLoggedIn) renderAdminView();
-                    updateShopSettingsUI();
-                    updateUserUI();
-
-                    if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!', timer: 1200, showConfirmButton: false });
+                } catch (e) {
+                    console.error("Data parse error:", e);
+                    if (showNotify) Swal.fire('ข้อผิดพลาด', 'ข้อมูลจากชีตมีรูปแบบไม่ถูกต้อง', 'error');
                 }
             };
 
             const script = document.createElement('script');
             script.src = `${APPS_SCRIPT_URL}?action=fetch&callback=${callbackName}`;
+            
+            script.onerror = function() {
+                if (document.body.contains(script)) document.body.removeChild(script);
+                if (showNotify) Swal.fire('เชื่อมต่อไม่สำเร็จ', 'กรุณาตรวจสอบอินเทอร์เน็ตหรือลิงก์ Apps Script', 'error');
+            };
+
             document.body.appendChild(script);
         }
     </script>
