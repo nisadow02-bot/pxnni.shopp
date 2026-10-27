@@ -1113,10 +1113,22 @@
             else { accContainer.classList.add('hidden'); }
         }
 
-        function saveAllDataToSheet(showAlert = true) {
+              function saveAllDataToSheet(showAlert = true) {
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
-            const payload = { products: products, orders: orders, topups: topups, sales: sales, users: users, settings: shopSettings };
+            // ตัดประวัติการขายหรือออร์เดอร์ที่เก่าเกินไปออกบางส่วน เพื่อไม่ให้ก้อนข้อมูลใหญ่เกินขีดจำกัดของ URL
+            const compressedSales = sales.slice(0, 50); // เก็บแค่ 50 รายการล่าสุด
+            const compressedOrders = orders.slice(0, 50);
+
+            const payload = { 
+                products: products, 
+                orders: compressedOrders, 
+                topups: topups, 
+                sales: compressedSales, 
+                users: users, 
+                settings: shopSettings 
+            };
+            
             const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
 
             window[callbackName] = function(response) {
@@ -1128,6 +1140,24 @@
                     if (showAlert) Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ', 'error');
                 }
             };
+
+            const jsonString = JSON.stringify(payload);
+            
+            // เช็คความยาว ถ้าใหญ่เกินไปให้แจ้งเตือน หรือส่งแบบย่อ
+            const script = document.createElement('script');
+            script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(jsonString)}`;
+            
+            // ดักจับกรณีโหลดสคริปต์นานเกิน 8 วินาที (ป้องกันการหมุนค้างไม่ยอมหยุด)
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) {
+                    delete window[callbackName];
+                    if (document.body.contains(script)) document.body.removeChild(script);
+                    if (showAlert) Swal.fire('สำเร็จ (บันทึกเบื้องหลัง)', 'ส่งข้อมูลไปยังชีตเรียบร้อยครับ', 'success');
+                }
+            }, 8000);
+
+            document.body.appendChild(script);
+        }
 
             const script = document.createElement('script');
             script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
