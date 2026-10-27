@@ -1113,20 +1113,27 @@
             else { accContainer.classList.add('hidden'); }
         }
 
-        function saveAllDataToSheet(showAlert = true) {
+                function saveAllDataToSheet(showAlert = true) {
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            
             const payload = { products: products, orders: orders, topups: topups, sales: sales, users: users, settings: shopSettings };
-            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
 
-            window[callbackName] = function(response) {
-                delete window[callbackName];
-                if (document.body.contains(script)) document.body.removeChild(script);
-                if (response && response.status === 'success') {
-                    if (showAlert) Swal.fire('สำเร็จ!', 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', 'success');
-                } else {
-                    if (showAlert) Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ', 'error');
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // ป้องกันปัญหา CORS ของ Google Apps Script
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                if (showAlert) {
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
                 }
-            };
+            }).catch(error => {
+                console.error('Save error:', error);
+                if (showAlert) {
+                    Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+                }
+            });
+        }
 
             const script = document.createElement('script');
             script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
