@@ -505,7 +505,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaGir0jY-f8rAZMHp86qrXSt582btPFR3awsO0FBuh-GGrI8_BPTibPhgPsQgc7luV/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxw6yK9WgxQCXQc4nh2eIog4rBz6eqCQuKOzpWMC5pObSibillbTQAVoro_orszq0YK/exec";
         const ADMIN_PASSWORD = "admin";
 
         let currentUser = null; 
@@ -1113,21 +1113,23 @@
             else { accContainer.classList.add('hidden'); }
         }
 
-                function saveAllDataToSheet(showAlert = true) {
+        function saveAllDataToSheet(showAlert = true) {
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
             const payload = { products: products, orders: orders, topups: topups, sales: sales, users: users, settings: shopSettings };
 
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // ป้องกันปัญหา CORS ของ Google Apps Script
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
-            }).then(() => {
+            })
+            .then(res => res.json())
+            .then(data => {
                 if (showAlert) {
                     Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
                 }
-            }).catch(error => {
+            })
+            .catch(error => {
                 console.error('Save error:', error);
                 if (showAlert) {
                     Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
