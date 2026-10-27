@@ -338,16 +338,16 @@
                             <input type="number" id="pPrice" required min="0" placeholder="35" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">ลิงก์รูปภาพสินค้า (Image URL)</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">ลิงก์รูปภาพสินค้าหลัก / รูปตัวอย่าง (Image URL)</label>
                             <input type="text" id="pImgUrl" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">รายละเอียดสินค้า (Description)</label>
-                            <textarea id="pDesc" rows="2" placeholder="รายละเอียด..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"></textarea>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">รายละเอียดสินค้า / ข้อมูลครบถ้วน (Description)</label>
+                            <textarea id="pDesc" rows="4" placeholder="ใส่รายละเอียดสินค้า เงื่อนไข หรือข้อมูลที่ต้องการให้ลูกค้าเห็นได้ครบถ้วน..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm whitespace-pre-line"></textarea>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1">สต๊อกสินค้า (รูปแบบ 6 บรรทัด = 1 สต๊อก | ถ้าไม่มีให้ใส่ -)</label>
-                            <p class="text-[11px] text-pink-600 mb-1 font-mono">ลำดับบรรทัด: Name / Mail / Passmail / Passacc / Key2fa / Link (บรรทัดที่ 6 คือลิงก์โซเชียลของแอคนี้)</p>
+                            <p class="text-[11px] text-pink-600 mb-1 font-mono">ลำดับบรรทัด: Name / Mail / Passmail / Passacc / Key2fa / Link</p>
                             <textarea id="pCodes" rows="6" placeholder="ชื่อบัญชี&#10;email@gmail.com&#10;passwordmail&#10;passwordaccount&#10;JBSWY3DPEHPK3PXP&#10;https://facebook.com/..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono text-xs"></textarea>
                         </div>
                     </div>
@@ -490,6 +490,20 @@
         </div>
     </div>
 
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-lg shadow-2xl border border-pastelPink relative text-center">
+            <button onclick="closeImagePreview()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-base font-bold text-gray-800 mb-3" id="previewModalTitle">รูปภาพตัวอย่างสินค้า</h3>
+            <div class="rounded-2xl overflow-hidden border border-pastelPink/50 bg-gray-50 max-h-[70vh] flex items-center justify-center mb-4">
+                <img id="previewModalImg" src="" alt="Product Preview" class="max-w-full max-h-[65vh] object-contain rounded-xl">
+            </div>
+            <button onclick="closeImagePreview()" class="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-sm transition-all">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
     <script>
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaGir0jY-f8rAZMHp86qrXSt582btPFR3awsO0FBuh-GGrI8_BPTibPhgPsQgc7luV/exec";
         const ADMIN_PASSWORD = "admin";
@@ -626,6 +640,18 @@
             document.getElementById('slipGuideModal').classList.add('hidden');
         }
 
+        function openImagePreview(imgUrl, title) {
+            playCuteSound();
+            document.getElementById('previewModalImg').src = imgUrl;
+            document.getElementById('previewModalTitle').innerText = title || 'รูปภาพตัวอย่างสินค้า';
+            document.getElementById('imagePreviewModal').classList.remove('hidden');
+        }
+
+        function closeImagePreview() {
+            playCuteSound();
+            document.getElementById('imagePreviewModal').classList.add('hidden');
+        }
+
         function handleLogin(e) {
             e.preventDefault();
             playCuteSound();
@@ -660,12 +686,10 @@
             }
         }
 
-        // ฟังก์ชันดึงลิงก์โซเชียล (บรรทัดที่ 6) จากสต๊อกชิ้นแรกที่พร้อมขาย มาแสดงปุ่ม "ชมแอค" ที่หน้าหลัก
         function getFirstStockSocialLink(product) {
             if (!product.codes || product.codes.length === 0) return null;
             const firstCodeBlock = product.codes[0];
             const lines = firstCodeBlock.split('\n');
-            // บรรทัดที่ 6 (index 5) คือลิงก์โซเชียล
             if (lines.length >= 6 && lines[5] && lines[5].trim() !== '-' && lines[5].trim() !== '') {
                 let link = lines[5].trim();
                 if (!link.startsWith('http://') && !link.startsWith('https://')) {
@@ -689,28 +713,41 @@
                 let socialButtonHtml = '';
                 if (socialLink) {
                     socialButtonHtml = `
-                        <a href="${socialLink}" target="_blank" onclick="playCuteSound()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center justify-center space-x-1 border border-purple-200 mb-2">
+                        <a href="${socialLink}" target="_blank" onclick="playCuteSound()" class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center space-x-1 border border-purple-200 text-center">
                             <i class="fa-solid fa-eye mr-1"></i> ชมแอค
                         </a>
+                    `;
+                }
+
+                let previewImgBtn = '';
+                if (p.img) {
+                    previewImgBtn = `
+                        <button onclick="openImagePreview('${p.img}', '${p.name}')" class="flex-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center space-x-1 border border-pink-200">
+                            <i class="fa-solid fa-image mr-1"></i> ดูรูปสินค้า
+                        </button>
                     `;
                 }
 
                 grid.innerHTML += `
                     <div class="bg-white rounded-3xl overflow-hidden border border-pastelPink/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                         <div>
-                            <div class="h-44 w-full overflow-hidden bg-pastelPink/20 relative">
-                                <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/FFD1DC/D946EF?text=pxnni.shop'">
+                            <div class="h-44 w-full overflow-hidden bg-pastelPink/25 relative cursor-pointer group" onclick="openImagePreview('${p.img}', '${p.name}')">
+                                <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.src='https://placehold.co/400x300/FFD1DC/D946EF?text=pxnni.shop'">
                                 <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs px-2.5 py-1 rounded-full font-bold shadow-sm ${isOutOfStock ? 'text-rose-500' : 'text-emerald-600'}">
                                     ${isOutOfStock ? 'สินค้าหมด' : `คงเหลือ ${stockCount} ชิ้น`}
                                 </span>
                             </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-gray-800 text-base mb-1">${p.name}</h3>
-                                <p class="text-xs text-gray-500 mb-2 line-clamp-2">${p.desc || ''}</p>
-                                ${socialButtonHtml}
+                            <div class="p-4 space-y-2">
+                                <h3 class="font-bold text-gray-800 text-base">${p.name}</h3>
+                                <p class="text-xs text-gray-600 whitespace-pre-line leading-relaxed bg-pastelCream/60 p-2.5 rounded-2xl border border-pastelPink/30">${p.desc || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+                                
+                                <div class="flex space-x-2 pt-1">
+                                    ${previewImgBtn}
+                                    ${socialButtonHtml}
+                                </div>
                             </div>
                         </div>
-                        <div class="p-4 pt-0 flex items-center justify-between mt-auto">
+                        <div class="p-4 pt-0 flex items-center justify-between mt-auto border-t border-gray-100 pt-3">
                             <div>
                                 <span class="text-xs text-gray-400 block">ราคา</span>
                                 <span class="text-lg font-bold text-pink-600">${p.price} ฿</span>
@@ -931,7 +968,7 @@
             renderProducts();
             renderAdminView();
             saveAllDataToSheet(false);
-            Swal.fire('สำเร็จ', 'บันทึกสต๊อกสินค้า 6 บรรทัดเรียบร้อย', 'success');
+            Swal.fire('สำเร็จ', 'บันทึกสต๊อกสินค้าและรายละเอียดเรียบร้อย', 'success');
         }
 
         function renderAdminView() {
@@ -1062,11 +1099,6 @@
             document.getElementById('displayAccName').innerText = shopSettings.accName || '-';
             document.getElementById('displayAccNumber').innerText = shopSettings.accNumber || '-';
             document.getElementById('displayAccWallet').innerText = shopSettings.accWallet || '-';
-
-            document.getElementById('topupDisplayBank').innerText = shopSettings.accBank + ' (' + shopSettings.accName + ')';
-            document.getElementById('topupDisplayNumber').innerText = shopSettings.accNumber;
-            document.getElementById('topupDisplayWallet').innerText = shopSettings.accWallet;
-            document.getElementById('topupDisplayNote').innerText = shopSettings.accNote;
 
             const rulesContainer = document.getElementById('rulesImgContainer');
             const rulesImg = document.getElementById('rulesImgDisplay');
