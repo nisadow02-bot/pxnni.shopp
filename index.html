@@ -429,7 +429,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end">
-                    <button onclick="playCuteSound(); saveAllDataToSheet()" class="w-full sm:w-auto bg-gradient-to-r from-pink-400 via-purple-400 to-amber-400 text-white font-bold px-6 py-3 rounded-2xl shadow-md text-sm hover:opacity-90 transition-all flex items-center justify-center">
+                    <button onclick="playCuteSound(); saveAllDataToSheet(true)" class="w-full sm:w-auto bg-gradient-to-r from-pink-400 via-purple-400 to-amber-400 text-white font-bold px-6 py-3 rounded-2xl shadow-md text-sm hover:opacity-90 transition-all flex items-center justify-center">
                         <i class="fa-solid fa-cloud-arrow-up mr-2"></i> บันทึกข้อมูลทั้งหมดลง Google Sheet
                     </button>
                 </div>
@@ -597,18 +597,13 @@
         };
 
         function switchTab(tabId) {
-            try {
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('bg-pastelPink/40'));
-                
-                const targetPage = document.getElementById(`page-${tabId}`);
-                if (targetPage) targetPage.classList.remove('hidden');
-                
-                const targetTab = document.getElementById(`tab-${tabId}`);
-                if (targetTab) targetTab.classList.add('bg-pastelPink/40');
-            } catch (err) {
-                console.error("SwitchTab error:", err);
-            }
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('bg-pastelPink/40'));
+            
+            const targetPage = document.getElementById(`page-${tabId}`);
+            if (targetPage) targetPage.classList.remove('hidden');
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.add('bg-pastelPink/40');
         }
 
         function checkAdminAccess() {
@@ -948,6 +943,7 @@
             const rawCodes = document.getElementById('pCodes').value.trim();
             let imgUrl = document.getElementById('pImgUrl').value.trim() || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60";
             
+            // แยกสต๊อกด้วยเครื่องหมาย | สำหรับคั่นแต่ละชิ้นสินค้า
             const chunks = rawCodes ? rawCodes.split('|').map(c => c.trim()).filter(c => c.length > 0) : [];
             const newItemsArray = [];
 
@@ -973,7 +969,8 @@
             resetProductForm();
             renderProducts();
             renderAdminView();
-            saveAllDataToSheet(true);
+            saveAllDataToSheet(false);
+            Swal.fire('สำเร็จ', 'บันทึกสต๊อกสินค้าและรายละเอียดเรียบร้อย', 'success');
         }
 
         function renderAdminView() {
@@ -1068,18 +1065,8 @@
             Swal.fire('ปฏิเสธรายการ', 'ปฏิเสธสลิปการเติมเงินนี้แล้ว', 'info');
         }
 
-        function editProductPrompt(id) { 
-            document.getElementById('selectExistingProduct').value = id; 
-            onSelectExistingProduct(); 
-        }
-
-        function deleteProduct(id) { 
-            playCuteSound();
-            products = products.filter(p => p.id !== id); 
-            renderProducts(); 
-            renderAdminView(); 
-            saveAllDataToSheet(true); 
-        }
+        function editProductPrompt(id) { document.getElementById('selectExistingProduct').value = id; onSelectExistingProduct(); }
+        function deleteProduct(id) { products = products.filter(p => p.id !== id); renderProducts(); renderAdminView(); saveAllDataToSheet(false); }
 
         function saveShopSettings() {
             playCuteSound();
@@ -1129,90 +1116,67 @@
         function saveAllDataToSheet(showAlert = true) {
             if (showAlert) Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             
-            const compressedSales = sales.slice(0, 50);
-            const compressedOrders = orders.slice(0, 50);
-
-            const payload = { 
-                products: products, 
-                orders: compressedOrders, 
-                topups: topups, 
-                sales: compressedSales, 
-                users: users, 
-                settings: shopSettings 
-            };
-            
-            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+            const payload = { products: products, orders: orders, topups: topups, sales: sales, users: users, settings: shopSettings };
+            const callbackName = 'jsonpSaveCallback_' + Math.round(100000 * Math.random());
 
             window[callbackName] = function(response) {
                 delete window[callbackName];
-                if (document.body.contains(script)) document.body.removeChild(script);
-                if (response && response.status === 'success') {
-                    if (showAlert) Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
-                } else {
-                    if (showAlert) Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
+                const s = document.getElementById(callbackName);
+                if (s && s.parentNode) s.parentNode.removeChild(s);
+
+                if (showAlert) {
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
                 }
             };
 
-            const jsonString = JSON.stringify(payload);
             const script = document.createElement('script');
-            script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(jsonString)}`;
-            
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) {
-                    delete window[callbackName];
-                    if (document.body.contains(script)) document.body.removeChild(script);
-                    if (showAlert) Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'ส่งข้อมูลไปยังชีตเรียบร้อยครับ', timer: 1500, showConfirmButton: false });
-                }
-            }, 8000);
-
+            script.id = callbackName;
+            script.src = `${APPS_SCRIPT_URL}?action=save&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
+            script.onerror = function() {
+                if (showAlert) Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+            };
             document.body.appendChild(script);
         }
 
         function fetchDataFromSheet(showNotify = false) {
             if (showNotify) Swal.fire({ title: 'กำลังอัปเดตสต๊อกและข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-            const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+            const callbackName = 'jsonpFetchCallback_' + Math.round(100000 * Math.random());
             window[callbackName] = function(response) {
                 delete window[callbackName];
-                if (document.body.contains(script)) document.body.removeChild(script);
+                const s = document.getElementById(callbackName);
+                if (s && s.parentNode) s.parentNode.removeChild(s);
 
-                try {
-                    if (response && response.status === 'success') {
-                        if (Array.isArray(response.products) && response.products.length > 0) products = response.products;
-                        if (Array.isArray(response.orders)) orders = response.orders;
-                        if (Array.isArray(response.topups)) topups = response.topups;
-                        if (Array.isArray(response.sales)) sales = response.sales;
-                        if (Array.isArray(response.users)) users = response.users;
-                        if (response.settings) shopSettings = response.settings;
+                if (response && response.status === 'success') {
+                    if (response.products) products = response.products;
+                    if (response.orders) orders = response.orders;
+                    if (response.topups) topups = response.topups;
+                    if (response.sales) sales = response.sales;
+                    if (response.users) users = response.users;
+                    if (response.settings) shopSettings = response.settings;
 
-                        if (currentUser) {
-                            let updatedUser = users.find(u => u.username === currentUser.username);
-                            if (updatedUser) currentUser = updatedUser;
-                        }
-
-                        renderProducts();
-                        renderOrders();
-                        renderTopups();
-                        if (isAdminLoggedIn) renderAdminView();
-                        updateShopSettingsUI();
-                        updateUserUI();
-
-                        if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!', timer: 1200, showConfirmButton: false });
+                    if (currentUser) {
+                        let updatedUser = users.find(u => u.username === currentUser.username);
+                        if (updatedUser) currentUser = updatedUser;
                     }
-                } catch (e) {
-                    console.error("Data parse error:", e);
-                    if (showNotify) Swal.fire('ข้อผิดพลาด', 'ข้อมูลจากชีตมีรูปแบบไม่ถูกต้อง', 'error');
+
+                    renderProducts();
+                    renderOrders();
+                    renderTopups();
+                    if (isAdminLoggedIn) renderAdminView();
+                    updateShopSettingsUI();
+                    updateUserUI();
+
+                    if (showNotify) Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!', timer: 1200, showConfirmButton: false });
                 }
             };
 
             const script = document.createElement('script');
+            script.id = callbackName;
             script.src = `${APPS_SCRIPT_URL}?action=fetch&callback=${callbackName}`;
-            
             script.onerror = function() {
-                if (document.body.contains(script)) document.body.removeChild(script);
-                if (showNotify) Swal.fire('เชื่อมต่อไม่สำเร็จ', 'กรุณาตรวจสอบอินเทอร์เน็ตหรือลิงก์ Apps Script', 'error');
+                if (showNotify) Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับ Google Sheet ได้', 'error');
             };
-
             document.body.appendChild(script);
         }
     </script>
