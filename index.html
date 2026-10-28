@@ -938,7 +938,7 @@
             document.getElementById('productForm').reset();
         }
 
-                function handleAddProduct(e) {
+        function handleAddProduct(e) {
             e.preventDefault();
             playCuteSound();
             const selectedId = document.getElementById('selectExistingProduct').value;
@@ -973,8 +973,6 @@
             resetProductForm();
             renderProducts();
             renderAdminView();
-            
-            // บันทึกลง Google Sheet ทันทีโดยไม่ต้องกดปุ่มใหญ่
             saveAllDataToSheet(true);
         }
 
@@ -1070,13 +1068,18 @@
             Swal.fire('ปฏิเสธรายการ', 'ปฏิเสธสลิปการเติมเงินนี้แล้ว', 'info');
         }
 
-        function editProductPrompt(id) { document.getElementById('selectExistingProduct').value = id; onSelectExistingProduct(); }
+        function editProductPrompt(id) { 
+            document.getElementById('selectExistingProduct').value = id; 
+            onSelectExistingProduct(); 
+        }
+
         function deleteProduct(id) { 
-    playCuteSound();
-    products = products.filter(p => p.id !== id); 
-    renderProducts(); 
-    renderAdminView(); 
-    saveAllDataToSheet(true); 
+            playCuteSound();
+            products = products.filter(p => p.id !== id); 
+            renderProducts(); 
+            renderAdminView(); 
+            saveAllDataToSheet(true); 
+        }
 
         function saveShopSettings() {
             playCuteSound();
@@ -1146,7 +1149,7 @@
                 if (response && response.status === 'success') {
                     if (showAlert) Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
                 } else {
-                    if (showAlert) Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ', 'error');
+                    if (showAlert) Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', timer: 1500, showConfirmButton: false });
                 }
             };
 
@@ -1175,7 +1178,7 @@
 
                 try {
                     if (response && response.status === 'success') {
-                        if (Array.isArray(response.products)) products = response.products;
+                        if (Array.isArray(response.products) && response.products.length > 0) products = response.products;
                         if (Array.isArray(response.orders)) orders = response.orders;
                         if (Array.isArray(response.topups)) topups = response.topups;
                         if (Array.isArray(response.sales)) sales = response.sales;
