@@ -938,7 +938,7 @@
             document.getElementById('productForm').reset();
         }
 
-        function handleAddProduct(e) {
+                function handleAddProduct(e) {
             e.preventDefault();
             playCuteSound();
             const selectedId = document.getElementById('selectExistingProduct').value;
@@ -973,8 +973,9 @@
             resetProductForm();
             renderProducts();
             renderAdminView();
-            saveAllDataToSheet(false);
-            Swal.fire('สำเร็จ', 'บันทึกสต๊อกสินค้าและรายละเอียดเรียบร้อย', 'success');
+            
+            // บันทึกลง Google Sheet ทันทีโดยไม่ต้องกดปุ่มใหญ่
+            saveAllDataToSheet(true);
         }
 
         function renderAdminView() {
@@ -1070,7 +1071,12 @@
         }
 
         function editProductPrompt(id) { document.getElementById('selectExistingProduct').value = id; onSelectExistingProduct(); }
-        function deleteProduct(id) { products = products.filter(p => p.id !== id); renderProducts(); renderAdminView(); saveAllDataToSheet(false); }
+        function deleteProduct(id) { 
+    playCuteSound();
+    products = products.filter(p => p.id !== id); 
+    renderProducts(); 
+    renderAdminView(); 
+    saveAllDataToSheet(true); 
 
         function saveShopSettings() {
             playCuteSound();
